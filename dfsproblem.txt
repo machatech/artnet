@@ -1,0 +1,164 @@
+class TreeNode:
+    def __init__(self, value):
+        self.value = value
+        self.children = []
+
+def get_positive_integer(prompt):
+    while True:
+        try:
+            value = int(input(prompt))
+            if value > 0:
+                return value
+            else:
+                print("Please enter a positive number greater than 0.")
+        except ValueError:
+            print("Invalid input. Please enter a number.")
+
+def build_tree():
+    nodes = {}
+   
+    while True:
+        n_n = get_positive_integer("Enter the number of nodes (1 to 50): ")
+        if n_n > 50:
+            print("Number of nodes exceeds 50.")
+            continue
+        break
+
+    print("Enter the node value and the child nodes. If no children, enter ' - ': ")
+   
+    entered_nodes = 0
+    for _ in range(n_n):
+        while True:
+            value = input(" ").strip()
+            value = value.split()
+            if len(value) < 1:
+                print("Please enter at least one node value.")
+                continue
+           
+            node_value = value[0]
+            try:
+                # Check if the node value is an integer
+                int(node_value)
+            except ValueError:
+                print(f"Node value '{node_value}' is not a valid integer.")
+                continue
+
+            if node_value not in nodes:
+                nodes[node_value] = TreeNode(node_value)
+
+            if len(value) == 1 and value[0] == '-':
+                print("Root node cannot be just '-' without value.")
+                continue
+           
+            if len(value) == 1 or (len(value) == 2 and value[1] == '-'):
+                entered_nodes += 1
+                break  # No children, break to process next node
+
+            for c_v in value[1:]:
+                if c_v != '-' and c_v not in nodes:
+                    nodes[c_v] = TreeNode(c_v)
+                if c_v != '-':
+                    nodes[node_value].children.append(nodes[c_v])
+           
+            entered_nodes += 1
+            break
+   
+    if entered_nodes != n_n:
+        print(f"Number of entered nodes ({entered_nodes}) does not match the specified number of nodes ({n_n}).")
+        return None
+
+    return nodes[next(iter(nodes))], nodes
+
+def dfs(root, target_value, path=None):
+    if path is None:
+        path = []
+    path.append(root.value)
+   
+    if root.value == target_value:
+        return path
+   
+    for child in root.children:
+        result = dfs(child, target_value, path.copy())
+        if result:
+            return result  
+    return None  
+
+def generate_arr(root, nodes, arr=None, index=0):
+    if arr is None:
+        arr = []
+        arr.append(root.value)
+   
+    if not root.children:
+        arr.append('-')
+        arr.append('-')
+    else:
+   
+        child_values = [child.value for child in root.children]
+        if len(child_values) == 1:
+            arr.extend(child_values)
+            arr.append('-')
+        else:
+            arr.extend(child_values)
+    index += 1
+    if index < len(arr):
+        if arr[index] in nodes:
+            ar_val = arr[index]
+            generate_arr(nodes[ar_val], nodes, arr, index)
+    return arr
+
+
+def tree_printer(arr, num_lvl):
+    current_level = 0
+    index = 0  
+   
+    while current_level <= num_lvl:
+        nodes_at_level = 2 ** current_level
+        leading_spaces = ' ' * (2 ** (num_lvl - current_level + 1) - 1)
+        spaces_between_nodes = ' ' * (2 ** (num_lvl - current_level + 2) - 1)
+       
+        line = leading_spaces
+        for _ in range(nodes_at_level):
+            if index < len(arr):
+                line += str(arr[index])
+                index += 1
+                if index < len(arr):  # Avoid index out of range
+                    line += spaces_between_nodes
+       
+        print(line)
+        current_level += 1
+
+def find_depth(root):
+    if root is None:
+        return -1
+
+    if not root.children:
+        return 0
+    child_depths = [find_depth(child) for child in root.children]
+   
+    return 1 + max(child_depths)
+
+def main():
+    root, nodes = build_tree()
+    if not root:
+        return
+   
+    arr = generate_arr(root,nodes)
+   
+    search_value = input("Enter the value to search for: ")
+   
+    if not search_value.isdigit():
+        print("Invalid input. Please enter a valid integer.")
+        return
+
+    path = dfs(root, search_value)
+   
+    if path:
+        print(f"Path = {' -> '.join(path)}")
+    else:
+        print("Value not found in the tree.")
+
+    tree_depth = find_depth(root)
+    tree_printer(arr, tree_depth)
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,101 @@
+while True:
+    user_input = input("Enter the positive n value of n*n board(1<=n<=20): ")
+
+    try:
+        n = int(user_input)
+        
+        if n <= 0:
+            print("Please enter a positive number.")
+            continue
+        elif n == 3 or n == 2:
+            print("Not possible. N-queen problem is only solvable for n > 3.")
+            continue
+        elif n > 20:
+            print("n should be less than 20.")
+            continue
+        break  
+    except ValueError:
+        print("Invalid input. Please enter a valid number.")
+
+matrix = [[0 for _ in range(n)] for _ in range(n)]  
+print("Board before plotting queens:")
+
+def print_grid(matrix):  
+    print("+" + "---+" * n)
+    for i, row in enumerate(matrix):
+        print("| " + " | ".join(map(str, row)) + " |")  
+        print("+" + "---+" * n)  
+
+print_grid(matrix)  
+
+while True:
+    try:
+        first_row = int(input("Enter a row for placing a queen to start (1<=n<=20): "))
+        if first_row <= 0 or first_row > n:
+            raise ValueError()
+        break
+    except ValueError:
+        print("Invalid input. Please enter a valid integer.")
+
+while True:
+    try:
+        first_col = int(input("Enter a col for placing a queen to start (1<=n<=20): ")) 
+        if first_col <= 0 or first_col > n:
+            raise ValueError()
+        break
+    except ValueError:
+        print("Invalid input. Please enter a valid integer.")
+matrix[first_row - 1][first_col - 1] = 1    
+print("Board at step 1:")  
+print_grid(matrix)  
+def is_safe(matrix, row, col, n):     
+    for i in range(row):  
+        if matrix[i][col] == 1:  
+            return False  
+    i, j = row, col
+    while i >= 0 and j >= 0:
+        if matrix[i][j] == 1:
+            return False
+        i -= 1
+        j -= 1
+    i, j = row, col
+    while i < n and j < n:
+        if matrix[i][j] == 1:
+            return False
+        i += 1
+        j += 1
+    i, j = row, col
+    while i >= 0 and j < n:
+        if matrix[i][j] == 1:
+            return False
+        i -= 1
+        j += 1
+    i, j = row, col
+    while i < n and j >= 0:
+        if matrix[i][j] == 1:
+            return False
+        i += 1
+        j -= 1       
+    return True  
+def solve_nqueens(matrix, row, n, cols_taken):  
+    if row >= n:  
+        return True  
+    if row == first_row - 1:  
+        return solve_nqueens(matrix, row + 1, n, cols_taken)  
+    for col in range(n):  
+        if col in cols_taken:  
+            continue
+        if is_safe(matrix, row, col, n):  
+            matrix[row][col] = 1   
+            cols_taken.add(col)  
+            if solve_nqueens(matrix, row + 1, n, cols_taken):  
+                return True     
+            matrix[row][col] = 0   
+            cols_taken.remove(col)  
+    return False  
+cols_taken = {first_col - 1}  
+if solve_nqueens(matrix, 0, n, cols_taken):  
+    print("Solution found:")  
+    print_grid(matrix)  
+else:  
+    print("No solution exists.")
